@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="ホーム" />
+
+    <item
+        android:id="@+id/navigation_toilet"
+        android:icon="@drawable/ic_toilet_black"
+        android:title="トイレ" />
+
+    <item
+        android:id="@+id/navigation_aircon"
+        android:icon="@drawable/ic_aircon_black"
+        android:title="エアコン" />
+
+    <item
+        android:id="@+id/navigation_camera"
+        android:icon="@drawable/ic_camera_black"
+        android:title="カメラ" />
+
+</menu>
