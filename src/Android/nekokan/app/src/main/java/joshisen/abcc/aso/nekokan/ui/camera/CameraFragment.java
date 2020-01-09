@@ -65,7 +65,7 @@ public class CameraFragment extends Fragment{
         Calendar cal = Calendar.getInstance();
         int minusMin = 0;
 
-        Query query = databaseReference.limitToLast(5);
+        Query query = databaseReference.limitToLast(15);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

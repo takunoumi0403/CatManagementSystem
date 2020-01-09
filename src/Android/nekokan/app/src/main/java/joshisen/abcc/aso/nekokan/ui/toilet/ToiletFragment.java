@@ -43,7 +43,9 @@ import joshisen.abcc.aso.nekokan.R;
 public class ToiletFragment extends Fragment {
     ArrayList<BarEntry> entries = new ArrayList<>();
     final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("toilet");
+    int defaultColor = R.color.lightskyblue;
     int weight[] = {0,0,0,0,0,0,0,0,0,0};
+    int barColor[] = {defaultColor,defaultColor,defaultColor,defaultColor,defaultColor,defaultColor,defaultColor,defaultColor,defaultColor,defaultColor};
     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     Query query;
 
@@ -95,7 +97,14 @@ public class ToiletFragment extends Fragment {
                                 dataSet.setHighlightEnabled(false);
 
                                 //Barの色をセット
-                                dataSet.setColors(new int[]{R.color.cornflowerblue, R.color.lightskyblue}, getActivity());
+                                for(int x = 0; x < 10; x++){
+                                    if(weight[x] >= 250){
+                                        barColor[x] = R.color.bootstrap_brand_danger;
+                                    }else if(weight[x] <= 50){
+                                        barColor[x] = R.color.bootstrap_brand_danger;
+                                    }
+                                }
+                                dataSet.setColors(barColor, getActivity());
                                 bars.add(dataSet);
 
                                 BarChart chart = (BarChart) getActivity().findViewById(R.id.chart);
@@ -127,6 +136,7 @@ public class ToiletFragment extends Fragment {
 
                                 //X軸
                                 XAxis xAxis = chart.getXAxis();
+
                                 //X軸に表示するLabelのリスト(最初の""は原点の位置)
                                 final String[] labels = {"", "10日前", "9日前", "8日前", "7日前", "6日前", "5日前", "4日前", "3日前", "2日前", "1日前"};
                                 xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));

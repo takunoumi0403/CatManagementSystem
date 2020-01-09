@@ -1,14 +1,18 @@
 package joshisen.abcc.aso.nekokan.ui.home;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -24,16 +28,21 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import joshisen.abcc.aso.nekokan.FileLoader;
+import joshisen.abcc.aso.nekokan.MainActivity;
 import joshisen.abcc.aso.nekokan.R;
 import joshisen.abcc.aso.nekokan.ui.aircon.air_conditioner;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
+    private View root;
+
+    //データベース参照[Firebaseデータベースのpictureテーブルを参照する]
+    final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("picture");
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_home, container, false);
-
+        root = inflater.inflate(R.layout.fragment_home, container, false);
 
         //
         final TextView textView = root.findViewById(R.id.textView7);
@@ -43,7 +52,7 @@ public class HomeFragment extends Fragment {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
         DatabaseReference refName = database.getReference("info");
-        final DatabaseReference refName2 = database.getReference("info/air_conditioner/airconSwitch");
+        DatabaseReference refName2 = database.getReference("toilet");
 
         refName.addChildEventListener(new ChildEventListener() {
             @Override
@@ -53,16 +62,13 @@ public class HomeFragment extends Fragment {
                     int temperature = aircon.getTemperature();
                     int airconSwitch = aircon.getAirconSwitch();
 
-
-                    textView.setText("室温："+temperature + "℃");
+                    textView.setText(temperature + "℃");
                     if (temperature >= 30) {
                         textView.setTextColor(Color.parseColor("#ff6347"));
-                    } else if (temperature <= 22) {
+                    } else if (temperature <= 18) {
                         textView.setTextColor(Color.parseColor("#4169e1"));
-                    } else {
-                        textView.setTextColor(Color.parseColor("#98fb98"));
                     }
-                }catch (Exception e){}
+                }catch (Exception e){e.printStackTrace();}
             }
 
             @Override
@@ -86,7 +92,9 @@ public class HomeFragment extends Fragment {
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
         int intDate = Integer.parseInt(sdf2.format(date));
 
-        Query query = refName.orderByChild("date").equalTo(intDate);
+        System.out.println("IntDate:::"+intDate);
+
+        Query query = refName2.orderByChild("date").equalTo(intDate);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -100,7 +108,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    textView2.setText("トイレ量："+weight + "g");
+                    textView2.setText(weight + "g");
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -112,7 +120,48 @@ public class HomeFragment extends Fragment {
             }
         });
 
+
+        Query query1 = databaseReference.limitToLast(1);
+
+
+        query1.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                try {
+                    //ダウンロードURL
+                    String downloadUrl = "";
+                    String date = "";
+                    //データがあるかどうかを判定
+                    if (dataSnapshot.exists()) {
+                        //データがある場合にはデータスナップショットから１件ずつissueに登録する
+                        for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                            downloadUrl = (String) issue.child("downloadUrl").getValue();
+                            date = (String)issue.child("date").getValue();
+                            break;
+                        }
+                    }
+
+                    System.out.println("URL::" + downloadUrl);
+                    TextView textView1 = getActivity().findViewById(R.id.textView9);
+                    textView1.setText(date+"　現在");
+                    FileLoader task = new FileLoader(getActivity());
+                    task.execute(downloadUrl);
+                }catch (Exception e){e.printStackTrace();}
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
         return root;
 
+
+
+
     }
+
+
 }
